@@ -1,0 +1,9 @@
+﻿  源.cpp
+C:\Users\Bolight\Desktop\Projects\Color Trap2\MBUTTON.h(52,3): warning C4102: “defalut”: 未引用的标签
+  (编译源文件“源.cpp”)
+  
+C:\Users\Bolight\Desktop\Projects\Color Trap2\MBUTTON.h(76,3): warning C4102: “defalut”: 未引用的标签
+  (编译源文件“源.cpp”)
+  
+C:\Users\Bolight\Desktop\Projects\Color Trap2\源.cpp(19,12): warning C4244: “参数”: 从“time_t”转换到“unsigned int”，可能丢失数据
+  Color Trap2.vcxproj -> C:\Users\Bolight\Desktop\Projects\Color Trap2\x64\Debug\Color Trap2.exe
