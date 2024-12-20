@@ -9,7 +9,7 @@ using namespace init;
 //24.12.14晚上22点，还要完成游戏主体逻辑的搭建，同时要完善endgame与clearmenu那里的逻辑关系，这两个有点重复了，考虑是否要加入暂停按钮
 
 //重新设置按钮的值
-void resetbuttons() {
+inline void resetbuttons() {
 	int n = 0;
 	int a[8][2] = {0};
 	COLOR ass[8] = { black,green,yellow,red,brown,blue,purple,cyan };
@@ -47,7 +47,7 @@ void resetbuttons() {
 }
 
 //放置player类按钮
-void putplayers() {
+inline void putplayers() {
 	question.putthings();
 	player1.putthings();
 	player2.putthings();
@@ -64,9 +64,11 @@ int main() {
 
 	//初始化窗口、按钮以及背景
 	initgraph(1280,720);
-	IMAGE BACKGROUND;
-	loadimage(&BACKGROUND, _T("images/BACKGROUND.png"));
-	putimage(0, 0, &BACKGROUND);
+	IMAGE INITBACKGROUND;
+	loadimage(&INITBACKGROUND, _T("images/INITBACKGROUND.png"));
+	putimage(0, 0, &INITBACKGROUND);
+	IMAGE OTBACKGROUND;
+	loadimage(&OTBACKGROUND, _T("images/OTHERBACKGROUND.png"));
 
 	//初始化覆盖图片
 	IMAGE REPLACE_TIME;
@@ -83,28 +85,41 @@ int main() {
 	IMAGE RANKINGLIST_BK;
 	loadimage(&RANKINGLIST_BK, _T("images/RANKINGLIST_BK.png"));
 
+	//初始化规则按钮的值
+	/*race_modebtn.setGamemode(race);
+	survival_modebtn.setGamemode(survival);
+	limit_modebtn.setGamemode(limit);
+	hell_modebtn.setGamemode(hell);*/
+
 	
 	ExMessage msg;
 	while (PROGRAM_RUNNING) {
 		DWORD starttime = GetTickCount();
 
 		//处于主菜单时
-		putimage(0, 0, &BACKGROUND);
+		putimage(0, 0, &INITBACKGROUND);
 		while (INIT_MENU_RUNNING) {
 			DWORD starttime_initmenu = GetTickCount();
+
 			stbtn.putmenu();
 			rkbtn.putmenu();
 			rlbtn.putmenu();
 			exbtn.putmenu();
+			chmodebtn.putmenu();
+
 			while (peekmessage(&msg)) {
+
 				stbtn.checkstatus(msg);
 				rlbtn.checkstatus(msg);
 				rkbtn.checkstatus(msg);
 				exbtn.checkstatus(msg);
+				chmodebtn.checkstatus(msg);
+				
 				stbtn.putmenu();
 				rkbtn.putmenu();
 				rlbtn.putmenu();
 				exbtn.putmenu();
+				chmodebtn.putmenu();
 			}
 
 			DWORD endtime_initmenu = GetTickCount();
@@ -115,7 +130,7 @@ int main() {
 		}
 		
 		//处于排行榜
-		putimage(0, 0, &BACKGROUND);
+		putimage(0, 0, &OTBACKGROUND);
 		if (rank)putimage(0, 0, &RANKINGLIST_BK);	//用来放置排行榜的内容
 		while (rank) {
 			DWORD starttime_rank = GetTickCount();
@@ -134,7 +149,7 @@ int main() {
 		}
 
 		//处于游戏介绍
-		putimage(0, 0, &BACKGROUND);
+		putimage(0, 0, &OTBACKGROUND);
 		if (rule)putimage(0, 0, &RULE_BK);	//用来放置游戏介绍的内容
 		while (rule) {
 			DWORD starttime_rule = GetTickCount();
@@ -152,11 +167,45 @@ int main() {
 			}
 		}
 
+		//处于游戏模式选择
+		while (CHOOSE_GAMEMODE) {
+			putimage(0, 0, &OTBACKGROUND);
+			DWORD starttime_chmode = GetTickCount();
+
+			remenubtn.putmenu();
+			race_modebtn.putmenu();
+			survival_modebtn.putmenu();
+			limit_modebtn.putmenu();
+			hell_modebtn.putmenu();
+			while (peekmessage(&msg)) {
+
+				remenubtn.checkstatus(msg);
+				race_modebtn.checkstatus(msg);
+				survival_modebtn.checkstatus(msg);
+				limit_modebtn.checkstatus(msg);
+				hell_modebtn.checkstatus(msg);
+
+				remenubtn.putmenu();
+				race_modebtn.putmenu();
+				survival_modebtn.putmenu();
+				limit_modebtn.putmenu();
+				hell_modebtn.putmenu();
+			}
+
+			//如果选择的是
+
+			DWORD endtime_chmode = GetTickCount();
+			DWORD process_chmode = endtime_chmode - starttime_chmode;
+			if (process_chmode < 1000 / 60) {
+				Sleep(1000 / 60 - process_chmode);
+			}
+		}
+
 		//游戏开始
 		while (gamestart) {
 			DWORD starttime_game = GetTickCount();
 
-			putimage(0, 0, &BACKGROUND);
+			putimage(0, 0, &OTBACKGROUND);
 			int score = 0, pre_score = 1;							//玩家得分
 			bool have_clicked = false;				//检测是否按了其中的某个按钮
 			DWORD this_game_start = GetTickCount();	//此局游戏的开始时间
@@ -235,7 +284,7 @@ int main() {
 					score_now = wss.str();
 					settextcolor(BLACK);
 					setbkmode(TRANSPARENT);
-					settextstyle(40, 0, _T("微软雅黑"));
+					settextstyle(40, 0, _T("Segoe UI Black"));
 					putimage(replace_score_now_rect.left, replace_score_now_rect.top, &REPLACE_SCORE);
 					drawtext(score_now.c_str(), &score_now_rect, DT_NOCLIP | DT_SINGLELINE | DT_CENTER);
 				}
@@ -269,7 +318,7 @@ int main() {
 			}
 
 			//结算菜单
-			putimage(0, 0, &BACKGROUND);
+			putimage(0, 0, &OTBACKGROUND);
 			wstring gameover=_T("游戏结束"), score_final;	//游戏结束文本，最终得分文本
 			RECT gameover_rect = { 590,100,690,150 };
 			RECT score_final_rect = { 590,200,690,250 };

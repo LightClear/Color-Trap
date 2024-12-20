@@ -2,14 +2,28 @@
 #include<graphics.h>
 bool gameend = false, gamestart = false, rank = false, rule = false, Exit = false,
 			INIT_MENU_RUNNING = true, CLEAR_MENU_RUNNING = false, PROGRAM_RUNNING = true, this_game = false;
+bool CHOOSE_GAMEMODE = false;
 
-int DIFFICULTY_TIME, DFFICULTY_HP, GAMEMODE;
+int DIFFICULTY_TIME, DFFICULTY_HP;
 
 //游戏模式，race：规定时间内比拼正确数； survival：有生命数，错一个扣生命； limit：限制单次题目的时间； hell：有生命数，限制单次题目时间
 enum GameMode {
-	race,survival,limit,hell
+	race,survival,limit,hell,nullmode
 };
 
+GameMode GAMEMODE=nullmode;
+
+//绘制包含透明度信息的图片
+#pragma comment(lib, "MSIMG32.LIB")
+inline void Putimage(int x,int y,IMAGE* img) {
+	int w = img->getwidth();
+	int h = img->getheight();
+	AlphaBlend(GetImageHDC(NULL), x, y, w, h,
+		GetImageHDC(img), 0, 0, w, h, { AC_SRC_OVER,0,255,AC_SRC_ALPHA });
+}
+
+
+//菜单按钮父类
 class MBUTTON {
 private:
 
@@ -41,13 +55,13 @@ public:
 	void putmenu() {
 		switch (status) {
 		case Status::Wait:
-			putimage(x, y, &bk_wait);
+			Putimage(x, y, &bk_wait);
 			break;
 		case Status::Hold:
-			putimage(x, y, &bk_hold);
+			Putimage(x, y, &bk_hold);
 			break;
 		case Status::Pushed:
-			putimage(x, y, &bk_pushed);
+			Putimage(x, y, &bk_pushed);
 			break;
 		defalut:
 			break;
@@ -147,6 +161,18 @@ protected:
 	}
 };
 
+//选择游戏模式按钮——主菜单界面
+class ChooseModeButton :public MBUTTON {
+public:
+	ChooseModeButton(LPCTSTR bkwait, LPCTSTR bkhold, LPCTSTR bkpushed, RECT re, int x_, int y_) :MBUTTON(bkwait, bkhold, bkpushed, re, x_, y_) {}
+protected:
+	//返回初始菜单
+	void onclick() {
+		CHOOSE_GAMEMODE = true;
+		INIT_MENU_RUNNING = false;
+	}
+};
+
 //返回初始菜单按钮
 class ReturnMenuButton :public MBUTTON {
 public:
@@ -156,6 +182,7 @@ protected:
 	void onclick() {
 		INIT_MENU_RUNNING = true;
 		rank = false, rule = false, CLEAR_MENU_RUNNING = false, this_game = false, gamestart = false;
+		CHOOSE_GAMEMODE = false;
 	}
 };
 
@@ -197,21 +224,49 @@ protected:
 	}
 };
 
-//选择游戏模式按钮
+
+//更改游戏模式按钮
 //游戏模式，race：规定时间内比拼正确数； survival：有生命数，错一个扣生命； limit：限制单次题目的时间； hell：有生命数，限制单次题目时间
 class GameModeButton :public MBUTTON {
 private:
-	int the_gamemode;
+	GameMode the_gamemode;
+	IMAGE successset;
+	int suc_x, suc_y;
 public:
 	GameModeButton(LPCTSTR bkwait, LPCTSTR bkhold, LPCTSTR bkpushed, RECT re, int x_, int y_) :MBUTTON(bkwait, bkhold, bkpushed, re, x_, y_) {}
 
-	//设置游戏模式
-	void setGamemode(int gmode) {
+	//设置游戏模式和成功设置后的消息图及其左上角坐标
+	void setGamemode(GameMode gmode, IMAGE suc, int sx, int sy) {
+		successset = suc;
 		the_gamemode = gmode;
+		suc_x = sx;
+		suc_y = sy;
 	}
 protected:
 	//改变游戏模式
 	void onclick() {
+		putimage(suc_x, suc_y, &successset);
 		GAMEMODE = the_gamemode;
+	}
+};
+
+//返回上一级按钮
+class ReturnButton :public MBUTTON {
+private:
+	bool* upperlevel;	//上一级
+	bool* thislevel;	//这一级
+public:
+	ReturnButton(LPCTSTR bkwait, LPCTSTR bkhold, LPCTSTR bkpushed, RECT re, int x_, int y_) :MBUTTON(bkwait, bkhold, bkpushed, re, x_, y_) {}
+
+	//设置这一级，上一级
+	void setlevel(bool* up, bool* this_) {
+		upperlevel = up;
+		thislevel = this_;
+	}
+protected:
+	//打开或关闭排行榜
+	void onclick() {
+		*upperlevel = true;
+		*thislevel = false;
 	}
 };

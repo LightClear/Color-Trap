@@ -8,6 +8,15 @@ enum COLOR {
 	black, green, yellow, red, brown, blue, purple, cyan, null
 };
 
+//绘制包含透明度信息的图片
+#pragma comment(lib, "MSIMG32.LIB")
+inline void Putimage(int x, int y, IMAGE* img) {
+	int w = img->getwidth();
+	int h = img->getheight();
+	AlphaBlend(GetImageHDC(NULL), x, y, w, h,
+		GetImageHDC(img), 0, 0, w, h, { AC_SRC_OVER,0,255,AC_SRC_ALPHA });
+}
+
 class GameButton {
 private:
 	RECT rect;
@@ -35,7 +44,7 @@ public:
 	//放置背景及文本
 	//black,green,yellow,red,brown,blue,purple,cyan
 	void putthings() {
-		putimage(rect.left, rect.top, &bk);
+		Putimage(rect.left, rect.top, &bk);
 		int wd = 0, he = 0;
 		switch (color) {
 		case black: {
